@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+<h1>PROCESSES</h1>
+
+<form id="form" action="." method="GET">
+    <a href="{{ url_for('process', action='restart_all_process', host_id=host_id) }}" class="btn btn-danger" role ="button">restar tall </a>
+    <a href="{{ url_for('process', action='stop_all_process', host_id=host_id) }}" class="btn btn-danger" role ="button">stop all</a>
+</form>
+
+
+<!-- process table -->
+<table class="table table-condensed table-hover">
+    <thead>
+    <tr>
+        <th> NO </th>
+        <th> STATE</th>
+        <th> DESCRIPTION</th>
+        <th> NAME</th>
+        <th> ACTION </th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+        {% for process in processes %}
+            {% if process.statename == 'STOPPED' %}
+                <tr class="info">
+            {% elif process.statename == 'FATAL' or process.statename == 'BACKOFF' %}
+                <tr class="danger">
+            {% else %}
+                <tr class="success">
+            {% endif %}
+
+            <td>{{loop.index}}</td>
+            <td> {{process.statename}}</td>
+            <td> {{process.description}}</td>
+            <td> {{process.name}}</td>
+
+            <td>
+                {% if process.statename == 'RUNNING' %}
+                    <a href="{{ url_for('process', action='stop_process',
+                        host_id=host_id, process_name=process.name) }}" class="btn btn-danger" role ="button">stop</a>
+                    <a href="{{ url_for('process', action='restart_process',
+                        host_id=host_id, process_name=process.name) }}" class="btn btn-success" role ="button"> restart </a>
+                {% else %}
+                    <a href="{{ url_for('process', action='start_process',
+                        host_id=host_id, process_name=process.name) }}" class="btn btn-success" role ="button"> start </a>
+                {% endif %}
+            </td>
+
+            <td>
+                <a href="{{ url_for('process', action='clear_process_log',
+                    host_id=host_id, process_name=process.name) }}" class="btn btn-info" role ="button"> clear log </a>
+                <a href="{{ url_for('process', action='tail_process_log',
+                    host_id=host_id, process_name=process.name) }}" class="btn btn-info" role ="button"> tail </a>
+            </td>
+
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- log -->
+{% if message %}
+    <div class="alert alert-success alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert">
+            <span aria-hidden="true">&times;</span>
+            <span class="sr-only">close</span></button>
+        {{ message }}
+    </div>
+{% endif %}
+
+{% endblock %}
